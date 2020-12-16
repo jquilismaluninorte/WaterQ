@@ -1,6 +1,7 @@
 import dash
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from dash_bootstrap_components._components.Row import Row
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table as dt
@@ -60,7 +61,8 @@ fil_dataG=dcc.Dropdown(
     id="filter-dataG-Year",
     options=[{'label': str(x), 'value': str(x)} for x in dataG_years],
     value='2010', 
-    searchable=False 
+    searchable=False,
+    style = {'width':'230px'} 
 )  
 
 
@@ -164,11 +166,11 @@ def createTable(df):
 ##################### Layout ###############################################################
 
 
-img=Image.open("./res/img/DS4A4.jpg")
-navbar = html.Div(dbc.Navbar([dbc.Row([
-    dbc.Col(html.Img(src=img, height="70px"))],
-    align="center",no_gutters=True)],
-    color="dark",dark=True))
+# img=Image.open("./res/img/DS4A4.jpg")
+# navbar = html.Div(dbc.Navbar([dbc.Row([
+#     dbc.Col(html.Img(src=img, height="70px"))],
+#     align="center",no_gutters=True)],
+#     color="dark",dark=True))
 
 
 ##################### Graph Elements ###############################################################
@@ -185,60 +187,33 @@ def grphfcity(data):
 
 
 def col_irca(year):
-    # Import Colombia GeoJSON
-    beat_orig = geopandas.read_file("./res/data/Boundaries_Colombia.geojson", driver = "GeoJSON")
     # Import Departments IRCA values
     with open('./res/data/Irca_Departamnetos.csv', 'rb') as f:
         result = chardet.detect(f.readline())
     df = pd.read_csv('./res/data/Irca_Departamnetos.csv',delimiter=";",dtype={'Divi_dpto': object, 'Divi_muni': object},encoding=result['encoding'])
+    df = df.rename(columns={'Año':'YEAR','Departamento':'NOM_DPTO','Divi_dpto':'COD_DPTO','Municipio':'NOM_MPIO','Divi_muni':'COD_MPIO','IRCA Promedio 2019':'IRCA','Categoría':'CATEGORY'})
+    # Import Municipios coordinates
+    with open('./res/data/DIVIPOLA_Municipios.csv', 'rb') as f1:
+            result2 = chardet.detect(f1.readline())
+    # Change columns names        
+    df_mun = pd.read_csv('./res/data/DIVIPOLA_Municipios.csv',delimiter=";",dtype={'COD_DPTO': object, 'COD_MPIO': object},encoding=result2['encoding'])
 
-    # Group by year
-    df_group = df[df['Año']==year].groupby(["Año","Divi_dpto"])["IRCA Promedio 2019"].mean().reset_index()
-    min_cn, max_cn = df_group['IRCA Promedio 2019'].quantile([0.01,0.99]).apply(round, 2)
+    df_merge=df[['YEAR','COD_MPIO','IRCA','CATEGORY']].merge(df_mun,on='COD_MPIO')
 
-    # Create a color map
-    colormap = branca.colormap.LinearColormap(
-        colors=['white','yellow','orange','red','darkred'],
-        #index=beat_cn['count'].quantile([0.2,0.4,0.6,0.8]),b
-        vmin=min_cn,
-        vmax=max_cn
-    )
+    df_group = df_merge[df_merge['YEAR']==year]
 
-    colormap.caption="IRCA Promedio por Departamentos "+str(year)
 
-    # Merge dataframes
-    result = beat_orig.join(df_group,how="left",lsuffix="DPTO",rsuffix="Divi_dpto")
-    result=result.drop(['Año','Divi_dpto'], axis=1)
-    result.fillna(0, inplace = True)
-
-    # Interactive visualization for IRCA values by year
-
-    m_IRCA = folium.Map(location=[3.66560006, -65.91899872],
-                            zoom_start=5,
-                            tiles="OpenStreetMap")
-    style_function = lambda x: {
-        'fillColor': colormap(x['properties']['IRCA Promedio 2019']),
-        'color': 'black',
-        'weight':2,
-        'fillOpacity':0.5
-    }
-    stategeo = folium.GeoJson(
-        result.to_json(),
-        name='Colombia',
-        style_function=style_function,
-        tooltip=folium.GeoJsonTooltip(
-            fields=['DPTO', 'IRCA Promedio 2019'],
-            aliases=['Departamento', 'Irca Promedio'], 
-            localize=True
-        )
-    ).add_to(m_IRCA)
-
-    colormap.add_to(m_IRCA)
-    return  m_IRCA
+    fig = px.scatter_mapbox(df_group, lat="LATITUD", lon="LONGITUD", color="IRCA", size="IRCA",
+                    color_continuous_scale=px.colors.cyclical.IceFire, size_max=15, zoom=4,
+                    text='NOM_MPIO',labels={'LATITUD':'Lat.','LONGITUD':'Long.','NOM_MPIO':'Munic.'},
+                    mapbox_style="carto-positron")
+    fig.update_layout(autosize=True)
+    return fig
 
 saMap=col_irca(2010)
-saMap.save('./res/data/Map.html')
-CMap=html.Div(html.Iframe(id='Colombia-map',srcDoc=open('./res/data/Map.html','r').read(),width='100%',height='450px'))
+
+CMap=html.Div(dcc.Graph(id='Colombia-map',figure=saMap))
+
 
 base=dataG[dataG['Year'].astype(str)=='2010']
 datPie=base.copy()
@@ -263,12 +238,12 @@ lineCity=dcc.Graph(id='line-city',figure=linep)
 
 ##################### Elements Disposition ###############################################################
 
-title=html.Div([html.H1('Colombia IRCA Data Analysis'),html.Br()])
+# title=html.Div([html.H1('Colombia IRCA Data Analysis'),html.Br()])
 title_line1=html.Div([html.H2('Deparments'),html.Br()])
 cardCMap = dbc.Card(
     dbc.CardBody(
         [
-            html.H3("Risk Map Water Quality in Colombia", className="card-title"),
+            html.H4("Risk Map Water Quality in Colombia", className="card-title"),
             CMap
         ]
     )
@@ -276,27 +251,24 @@ cardCMap = dbc.Card(
 cardfil_dataG = dbc.Card(
     dbc.CardBody(
         [
-            html.H3("Filter Results by Year", className="card-title"),
-            fil_dataG
+            dbc.Row(dbc.Col(dbc.Row([dbc.Col(html.H4("Filter Results by Year")),
+            dbc.Col(fil_dataG)]),width={"size": 6, "offset": 3}))
         ]
     )
 )
 cardpiecha = dbc.Card(
     dbc.CardBody(
         [
-            html.H3("Risk Distribution in Colombia", className="card-title"),
+            html.H4("Risk Distribution in Colombia", className="card-title"),
             piecha
         ]
     )
 )
-col2_line1=html.Div([html.Div(cardfil_dataG),html.Br(),html.Div(cardpiecha)])
-line1=html.Div([html.Br(),
-dbc.Row([
-    dbc.Col(dbc.Row([html.Div(cardCMap,style={'width': '92%','textAlign': 'center'})],justify="center"),align='center',width=7),
-    dbc.Col(html.Div(col2_line1,style={'width': '90%','textAlign': 'center'}))],
-    justify="center", 
-    align="center"),
-    html.Br()])
+
+line1=html.Div(
+    [html.Br(),dbc.Row(dbc.Col(html.Div(cardfil_dataG))),html.Br(),dbc.Row([
+    dbc.Col(html.Div(cardCMap,style={'textAlign': 'center'}),align='center',width=7),
+    dbc.Col(html.Div(cardpiecha))])])
 
 title_line2=html.Div([html.H2('Categories'),html.Br()])
 filters_line2 = dbc.Card(
@@ -437,24 +409,77 @@ allCon=dbc.Row([html.Div([tabs,tabCon],style={'width': '95%','textAlign': 'cente
 
 ##################### App Configuration ###############################################################
 
-content=html.Div([navbar,html.Br(),title,allCon],style={'width': '100%'})
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
 server = app.server
 app.config.suppress_callback_exceptions = True
+
+
+img='https://correlation1-public.s3-us-west-2.amazonaws.com/training/asset_2_2x.png' 
+
+teamgroup = {'team1':['David Vanegas','Ingeniería Mecatrónica','Bogotá','https://ca.slack-edge.com/T01FBG4QQQH-U01EUT5MEBG-e8a680e24200-512'],
+'team2':['Javier Quilismal','Ingeniería Mecánica','Bogotá','https://ca.slack-edge.com/T01FBG4QQQH-U01EYGJD8BX-2124d7dfea27-192'],
+'team3':['Laura Lucía García','Actuaria','Bucaramanga','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTFB83Y-10d400fb9ef4-512'],
+'team4':['Oscar Trujillo','Ingeniería Mecánica - Biomedica','Bogotá','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTF2T0E-7d3d823bd1f6-512'],
+'team5':['Sandra Ropero','Estadística','Melbourne - Australia','https://ca.slack-edge.com/T01FBG4QQQH-U01FE8MS1BK-e1ec27e1d28a-512'],
+'team6':['Sergio Herrera','Ingeniería Industrial','Ibagué','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTDECUE-g197cffb0fa5-512']
+}
+
+def cardteam(team):
+    card = dbc.Card(
+        [
+            dbc.CardImg(src=team[3], top=True),
+            dbc.CardBody(
+                [
+                    html.H5(team[0], className="card-title"),
+                    html.P(
+                        team[2] + " / " + team[1],
+                        className="card-text",
+                    )
+                ]
+            ),
+        ],
+        style={"width": "11.5rem"},className="card border-primary mb-3"
+    )
+    return card
+cards =[]
+for key in teamgroup:
+    cards.append(cardteam(teamgroup[key]))
+navbar = dbc.Nav([
+    html.Div(html.Img(src=img,height="30px"),className="collapse navbar-collapse"),
+    html.Div([
+        html.H1("Colombia IRCA Data Analysis", className="mx-lg-5"),
+        html.Button("TEAM 15",className="btn btn-info mx-5",id="collapse-button")
+    ],className="collapse navbar-collapse")
+    ],className="navbar navbar-expand-lg navbar-dark bg-dark")
+collapse = dbc.Collapse(
+            dbc.Row(cards),
+            id="collapse",
+        )
+head = html.Div([
+    navbar,
+    collapse 
+],style={'textAlign': 'center'})
+content=html.Div([head,html.Br(),allCon],style={'width': '100%'})
 app.layout=html.Div(content)
-
-
 ##################### Callbacks ###############################################################
+@app.callback(
+    Output("collapse", "is_open"),
+    [Input("collapse-button", "n_clicks")],
+    [State("collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 @app.callback(
-    [Output('Colombia-map', 'srcDoc'),Output('pie-chart', 'figure')],
+    [Output('Colombia-map', 'figure'),Output('pie-chart','figure')],
     [Input('filter-dataG-Year', 'value')])
 def update_table_dataG(value):
-    base=dataG[dataG['Year'].astype(str)==str(value)]
+    base=dataG[dataG['Year']==int(value)]
     if len(base)>0:
-        saMap=col_irca(int(value))
-        saMap.save('res\data\Map.html')
-        loSaMap=srcDoc=open('res\data\Map.html','r').read()
+        loSaMap=col_irca(int(value))
         datPie=base.copy()
         datPie['percentage']=1
         datPie=datPie.groupby('Risk').count().reset_index()
