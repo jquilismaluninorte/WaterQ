@@ -1,22 +1,17 @@
+import os
+
+import chardet
 import dash
-from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from dash_bootstrap_components._components.Row import Row
-import dash_html_components as html
 import dash_core_components as dcc
+import dash_html_components as html
 import dash_table as dt
-from PIL import Image
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
-import pandas as pd
-import numpy as np
-import branca
-import chardet
-import folium
-import geopandas
+from dash.dependencies import Input, Output, State
+from dash_bootstrap_components._components.Row import Row
 from scipy import stats
-import os
 
 ##################### Read data ###############################################################
 dirname = os.path.dirname(__file__)
