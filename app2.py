@@ -391,7 +391,7 @@ dbc.Row([
 
 tabs = dbc.Tabs(
     [
-        dbc.Tab(id='tab1', label="Departments"),
+        dbc.Tab(id='tab1', label="Map Risk"),
         dbc.Tab(id='tab2', label="Categories"),
         dbc.Tab(id='tab3', label="Cities"),
         dbc.Tab(id='tab4', label="Indentification of Risk Level in Water Quality"),
