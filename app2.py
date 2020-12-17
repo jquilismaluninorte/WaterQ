@@ -200,7 +200,7 @@ def col_irca(year):
 
     fig = px.scatter_mapbox(df_group, lat="LATITUD", lon="LONGITUD", color="IRCA", size="IRCA",
                     color_continuous_scale=px.colors.cyclical.IceFire, size_max=15, zoom=4,
-                    text='NOM_MPIO',labels={'LATITUD':'Lat.','LONGITUD':'Long.','NOM_MPIO':'Munic.'},
+                    text='NOM_MPIO',labels={'LATITUD':'Lat.','LONGITUD':'Lon.','NOM_MPIO':'City'},
                     mapbox_style="carto-positron")
     fig.update_layout(autosize=True)
     return fig
@@ -212,6 +212,7 @@ CMap=html.Div(dcc.Graph(id='Colombia-map',figure=saMap))
 
 base=dataG[dataG['Year'].astype(str)=='2010']
 datPie=base.copy()
+datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Risk free'})
 datPie['percentage']=1
 datPie=datPie.groupby('Risk').count().reset_index()
 datPie=datPie[['Risk','percentage']]
@@ -476,6 +477,7 @@ def update_table_dataG(value):
     if len(base)>0:
         loSaMap=col_irca(int(value))
         datPie=base.copy()
+        datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Risk free'})
         datPie['percentage']=1
         datPie=datPie.groupby('Risk').count().reset_index()
         datPie=datPie[['Risk','percentage']]
