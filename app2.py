@@ -173,16 +173,6 @@ def createTable(df):
     return table
 
 
-##################### Layout ###############################################################
-
-
-# img=Image.open("./res/img/DS4A4.jpg")
-# navbar = html.Div(dbc.Navbar([dbc.Row([
-#     dbc.Col(html.Img(src=img, height="70px"))],
-#     align="center",no_gutters=True)],
-#     color="dark",dark=True))
-
-
 ##################### Graph Elements ###############################################################
 
 
@@ -227,7 +217,7 @@ CMap=html.Div(dcc.Graph(id='Colombia-map',figure=saMap))
 
 base=dataG[dataG['Year'].astype(str)=='2010']
 datPie=base.copy()
-datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Risk free'})
+datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Without risk'})
 datPie['percentage']=1
 datPie=datPie.groupby('Risk').count().reset_index()
 datPie=datPie[['Risk','percentage']]
@@ -489,7 +479,7 @@ def update_table_dataG(value):
     if len(base)>0:
         loSaMap=col_irca(int(value))
         datPie=base.copy()
-        datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Risk free'})
+        datPie['Risk'] = datPie['Risk'].replace({'Bajo':'Low','Medio':'Medium','Alto':'High','Sin información':'No information','Sin riesgo':'Without risk'})
         datPie['percentage']=1
         datPie=datPie.groupby('Risk').count().reset_index()
         datPie=datPie[['Risk','percentage']]
