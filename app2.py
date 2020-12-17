@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
 from dash_bootstrap_components._components.Row import Row
 from scipy import stats
+import statsmodels
+from statsmodels.regression.linear_model import OLSResults
 
 ##################### Read data ###############################################################
 dirname = os.path.dirname(__file__)
@@ -43,6 +45,26 @@ dic = {
   6: "Class 6",
   "ESP":"Special"
 }
+minerals = ('ARENAS NEGRAS',
+            'ASFALTITA',
+            'AZUFRE',
+            'BARITA',
+            'COBRE',
+            'FELDESPATOS',
+            'MANGANESO',
+            'MARMOL',
+            'MARMOL EN RAJÓN (RETAL DE MÁRMOL)',
+            'MINERAL DE MAGNESIO (MAGNESITA)',
+            'NIOBIO',
+            'NIQUEL',
+            'ORO',
+            'PIEDRA ARENISCA-PIEDRA BOGOTANA',
+            'PLATINO',
+            'PUZOLANAS',
+            'ROCA FOSFORICA',
+            'SERPENTINA (BLOQUE MENOR A 1 M3)',
+            'TALCO',
+            'VOLFRAMIO')
 cat=cat.replace({"Category": dic})
 lisCat=list(cat[['Deparment','Category']].sort_values('Category')['Category'].unique())
 lisDepa=list(cat[['Deparment','Category']].sort_values('Deparment')['Deparment'].unique())
@@ -106,22 +128,15 @@ fil_data_cit=dcc.Dropdown(
 )
 
 
-fil_data_catP=dcc.Dropdown(
-    id="filter-data-CatP",
-    options=[{'label': str(x), 'value': str(x)} for x in lisCat],
-    value='Class 1', 
-    searchable=False 
-)
-
 fil_data_expP=dcc.Dropdown(
     id="filter-data-expP",
-    options=[{'label': str(x), 'value': str(x)} for x in lisCat],
+    options=[{'label': str(x), 'value': str(x)} for x in minerals],
     value='Class 1', 
     searchable=False 
 )
 
-inputPopulation=dbc.InputGroup([dbc.InputGroupAddon("Cuantity", addon_type="prepend"),
-dbc.Input(id="population",placeholder="Population", type="number")])
+inputPopulation=dbc.InputGroup([dbc.InputGroupAddon("Quantity", addon_type="prepend"),
+dbc.Input(id="quantity",placeholder="Write quantity to extract", type="number")])
 
 
 
@@ -363,13 +378,10 @@ filters_line4 = dbc.Card(
         [
             html.H3("Predict Risk Level Using the Following Variables", className="card-title"),
             html.Div([html.Br(),
-                html.H6('Select Category:'),
-                dbc.Row([html.Div(fil_data_catP, style={'width': '90%'})],justify="center"),
-                html.Br(),
-                html.H6('Classify according to the type of mining:'),
+                html.H6('Select the mineral to extract:'),
                 dbc.Row([html.Div(fil_data_expP, style={'width': '90%'})],justify="center"),
                 html.Br(),
-                html.H6('Define the size of the population:'),
+                html.H6('Define the quantity to extract:'),
                 dbc.Row([html.Div(inputPopulation, style={'width': '90%'})],justify="center"),
                 html.Br(),
                 dbc.Button("Predict", id="predict-risk", color="primary")
@@ -418,7 +430,7 @@ teamgroup = {'team1':['David Vanegas','Ingeniería Mecatrónica','Bogotá','http
 'team3':['Laura Lucía García','Actuaria','Bucaramanga','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTFB83Y-10d400fb9ef4-512'],
 'team4':['Oscar Trujillo','Ingeniería Mecánica - Biomedica','Bogotá','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTF2T0E-7d3d823bd1f6-512'],
 'team5':['Sandra Ropero','Estadística','Melbourne - Australia','https://ca.slack-edge.com/T01FBG4QQQH-U01FE8MS1BK-e1ec27e1d28a-512'],
-'team6':['Sergio Herrera','Ingeniería Industrial','Ibagué','https://ca.slack-edge.com/T01FBG4QQQH-U01EUTDECUE-g197cffb0fa5-512']
+'team6':['Sergio Herrera','Ingeniería Industrial','Ibagué','https://media-exp1.licdn.com/dms/image/C4D03AQGMfaTLL6HWUA/profile-displayphoto-shrink_400_400/0/1596310733503?e=1613606400&v=beta&t=3TN3bIFwlU5oY4JrcLFBhUgyqxpTXS14xzPeX0ng0aM']
 }
 
 def cardteam(team):
@@ -560,33 +572,45 @@ def update_contet_line3(n_clicks,value1,value2,value3):
         linep.update_xaxes(tickangle=-90)
         return boxp,linep
 
-def predictRissk(value):
-    if value=='Class 1':
-        return 'Other'
-    else: 
-        return 'Medio'
+def predictRisk(cantidad,recurso):
+    model = OLSResults.load("./res/data/model1.pickle")
+    value=model.predict(pd.DataFrame({'Cantidad': cantidad, 'Recurso': recurso}, index=[0]))[0]
+    risk=''
+    if value<=5:
+        risk='Without risk'
+    elif value>5 and value<=14:
+        risk='Low'
+    elif value>14 and value<=35:
+        risk='Medium'
+    elif value>35 and value<=80:
+        risk='High'
+    elif value>80:
+        risk='Sanitary unfeasible'
+    return value,risk
 
 @app.callback(
     Output('message', 'children'),
     [Input('predict-risk', 'n_clicks')],
-    [State('filter-data-CatP', 'value'),
-    State('filter-data-expP', 'value'),
-    State('population', 'value')])
-def update_contet_line4(n_clicks,value1,value2,value3):
-    risk=predictRissk(value1)
-    if risk=="Bajo":
+    [State('filter-data-expP', 'value'),
+    State('quantity', 'value')])
+def update_contet_line4(n_clicks,value1,value2):
+    value,risk=predictRisk(value2,value1)
+    value = round(value,2)
+    if value>100:
+        value = 100
+    if risk=="Without risk" or risk=="Low":
         children= dbc.Card([dbc.CardHeader("Safe"),
-        dbc.CardBody([html.H5("Risk Level low", className="card-title"),
+        dbc.CardBody([html.H5("IRCA value: "+str(value)+" Risk type: "+risk, className="card-title"),
         html.P("There is not risk",className="card-text")])],
         color="success", inverse=True)
-    elif risk=="Medio":
+    elif risk=="Medium":
         children= dbc.Card([dbc.CardHeader("Warning"),
-        dbc.CardBody([html.H5("Risk Level", className="card-title"),
+        dbc.CardBody([html.H5("IRCA value: "+str(value)+" Risk type: "+risk, className="card-title"),
         html.P("There is  risk",className="card-text")])],
         color="warning", inverse=True)
-    elif risk=="Alto":
+    elif risk=="High" or risk=="Sanitary unfeasible":
         children= dbc.Card([dbc.CardHeader("Danger"),
-        dbc.CardBody([html.H5("Risk Level ", className="card-title"),
+        dbc.CardBody([html.H5("IRCA value: "+str(value)+" Risk type: "+risk, className="card-title"),
         html.P("There is  risk",className="card-text")])],
         color="danger", inverse=True)
     else:
