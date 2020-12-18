@@ -9,17 +9,15 @@ import dash_table as dt
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import statsmodels
 from dash.dependencies import Input, Output, State
 from dash_bootstrap_components._components.Row import Row
-from scipy import stats
-import statsmodels
-from statsmodels.regression.linear_model import OLSResults
 from flask import Flask
-from flask_login import LoginManager, login_user, current_user, logout_user, login_required, UserMixin
+from flask_login import (LoginManager, UserMixin, current_user, login_required,
+                         login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
-
-
-
+from scipy import stats
+from statsmodels.regression.linear_model import OLSResults
 
 ##################### Read data ###############################################################
 dirname = os.path.dirname(__file__)
@@ -472,7 +470,7 @@ content=html.Div([head,html.Br(),allCon],style={'width': '100%'})
 app.layout=html.Div(content)
 
 app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
-app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:team15@localhost:5432/waterq'
+app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:@localhost/waterq'
 app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app.server)
 login_manager = LoginManager()
