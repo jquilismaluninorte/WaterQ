@@ -14,6 +14,12 @@ from dash_bootstrap_components._components.Row import Row
 from scipy import stats
 import statsmodels
 from statsmodels.regression.linear_model import OLSResults
+from flask import Flask
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required, UserMixin
+from flask_sqlalchemy import SQLAlchemy
+
+
+
 
 ##################### Read data ###############################################################
 dirname = os.path.dirname(__file__)
@@ -412,6 +418,10 @@ app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
 server = app.server
 app.config.suppress_callback_exceptions = True
 
+server= Flask(__name__)
+app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.config.suppress_callback_exceptions = True
+
 
 img='https://correlation1-public.s3-us-west-2.amazonaws.com/training/asset_2_2x.png' 
 
@@ -460,6 +470,14 @@ head = html.Div([
 ],style={'textAlign': 'center'})
 content=html.Div([head,html.Br(),allCon],style={'width': '100%'})
 app.layout=html.Div(content)
+
+app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
+app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:team15@localhost:5432/waterq'
+app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+db = SQLAlchemy(app.server)
+login_manager = LoginManager()
+login_manager.init_app(app.server)
+
 ##################### Callbacks ###############################################################
 @app.callback(
     Output("collapse", "is_open"),
