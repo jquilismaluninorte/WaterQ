@@ -470,7 +470,7 @@ content=html.Div([head,html.Br(),allCon],style={'width': '100%'})
 app.layout=html.Div(content)
 
 app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
-app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:@localhost/waterq'
+app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:team15@localhost/waterq'
 app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app.server)
 login_manager = LoginManager()
