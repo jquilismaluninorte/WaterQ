@@ -419,7 +419,7 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 
 server= Flask(__name__)
-app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
+# app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.config.suppress_callback_exceptions = True
 
 
@@ -477,6 +477,19 @@ app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app.server)
 login_manager = LoginManager()
 login_manager.init_app(app.server)
+
+##################### Modelo base de datos ###############################################################
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(70))
+    email = db.Column(db.String(100))
+    password = db.Column(db.String(200))
+    record = db.relationship('Record', backref='owner')
+    def __init__(self,name,email,password,):
+        self.name = name
+        self.email = email
+        self.password = password
+db.create_all()
 
 ##################### Callbacks ###############################################################
 @app.callback(
