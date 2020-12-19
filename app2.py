@@ -435,9 +435,9 @@ login = html.Div([dbc.Card(
             dbc.Form([
             dbc.Row(html.Div(email_input,style={'width': '90%'}),align='center',justify="center"),
             dbc.Row(html.Div(password_input,style={'width': '90%'}),align='center',justify="center"),
-            dbc.Row(html.Div([dbc.Button("You do not have an account, click here", id='create-acount', color="link")],style={'width': '90%'}),align='center',justify="center"),
             html.Br(),
-            dbc.Row(html.Div([submit,' ',logIn],style={'width': '90%'}),align='center',justify="center")])
+            dbc.Row(html.Div([submit,' ',logIn],style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div([dbc.Button("You do not have an account, click here", id='create-acount', color="link")],style={'width': '90%'}),align='center',justify="center"),])
         ]
     )
 )],style={'width': '40%','textAlign': 'center'})
