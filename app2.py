@@ -494,18 +494,6 @@ dbc.Row([
             )
 ]),html.Div(style={"height": "23vh"})]))
 
-##################### App Configuration ###############################################################
-
-
-app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
-server = app.server
-app.config.suppress_callback_exceptions = True
-app.secret_key = os.urandom(24)
-
-server= Flask(__name__)
-# app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
-app.config.suppress_callback_exceptions = True
-app.title = 'WaterQ'
 
 img='https://correlation1-public.s3-us-west-2.amazonaws.com/training/asset_2_2x.png' 
 
@@ -555,6 +543,19 @@ content=html.Div(id='page-content',children=loginbody)
 
 maincontent=html.Div(html.Div([head,html.Br(),allCon],style={'width': '100%'}),id="maincontent")
 
+##################### App Configuration ###############################################################
+
+server= Flask(__name__)
+app = dash.Dash(server=server,external_stylesheets=[dbc.themes.CERULEAN])
+
+app.config.suppress_callback_exceptions = True
+app.secret_key = os.urandom(24)
+#app.server.secret_key = os.urandom(24)
+
+
+# app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.config.suppress_callback_exceptions = True
+app.title = 'WaterQ'
 app.layout=html.Div(content)
 
 app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
