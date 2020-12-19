@@ -412,7 +412,7 @@ allCon=dbc.Row([html.Div([tabs,tabCon],style={'width': '95%','textAlign': 'cente
 
 ##################### Login ###############################################################
 
-imgB=Image.open("res\img\icon.jpg")
+imgB=Image.open("./res/img/icon.jpg")
 bran=html.Img(src=imgB, height="120px")
 email_input = dbc.FormGroup(
     [
