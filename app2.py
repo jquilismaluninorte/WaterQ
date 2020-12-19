@@ -569,7 +569,6 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(70))
     email = db.Column(db.String(100))
     password = db.Column(db.String(200))
-    record = db.relationship('Record', backref='owner')
     def __init__(self,name,email,password,):
         self.name = name
         self.email = email
