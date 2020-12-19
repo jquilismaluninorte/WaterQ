@@ -500,6 +500,7 @@ dbc.Row([
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
 server = app.server
 app.config.suppress_callback_exceptions = True
+app.config['SECRET_KEY'] = 'the random string'  
 
 server= Flask(__name__)
 # app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
