@@ -2,3 +2,8 @@ res\\data\\Map.html
 __pycache__
 .history
 app_newFeatures.py
+.vscode
+node_modules
+.gitignore
+package-lock.json
+README.html

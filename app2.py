@@ -559,7 +559,8 @@ app.title = 'WaterQ'
 app.layout=html.Div(content)
 
 app.layout=html.Div(content)
-app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:team15@localhost/waterq'
+passworddb='team15'
+app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:'+passworddb+'@localhost/waterq'
 app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app.server)
 login_manager = LoginManager()
@@ -575,7 +576,7 @@ class User(UserMixin, db.Model):
         self.name = name
         self.email = email
         self.password = password
-db.create_all()
+#db.create_all()
 
 ##################### Callbacks ###############################################################
 
