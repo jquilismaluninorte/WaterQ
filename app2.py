@@ -16,6 +16,7 @@ from flask import Flask
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
 from scipy import stats
 from statsmodels.regression.linear_model import OLSResults
 
@@ -409,6 +410,90 @@ tabCon=html.Div(id="tab-content")
 
 allCon=dbc.Row([html.Div([tabs,tabCon],style={'width': '95%','textAlign': 'center'})],justify="center", align="center")
 
+##################### Login ###############################################################
+
+imgB=Image.open("res\img\icon.jpg")
+bran=html.Img(src=imgB, height="120px")
+email_input = dbc.FormGroup(
+    [
+        dbc.Input(id="user", placeholder="Enter email")
+    ]
+)
+password_input = dbc.FormGroup(
+    [
+        dbc.Input(type="password",id="password",placeholder="Enter password")
+    ]
+)
+submit=dbc.Button("Sign in", id='login-button', color="primary")
+logIn=dbc.Button("login visitor", id='visitor', color="success")
+
+login = html.Div([dbc.Card(
+    dbc.CardBody(
+        [
+            dbc.Row(html.Div(bran,style={'width': '78%'}),align='center',justify="center"),
+            html.Br(),
+            dbc.Form([
+            dbc.Row(html.Div(email_input,style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div(password_input,style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div([dbc.Button("You do not have an account, click here", id='create-acount', color="link")],style={'width': '90%'}),align='center',justify="center"),
+            html.Br(),
+            dbc.Row(html.Div([submit,' ',logIn],style={'width': '90%'}),align='center',justify="center")])
+        ]
+    )
+)],style={'width': '40%','textAlign': 'center'})
+
+
+loginbody = html.Div([html.Div(style={"height": "24vh"}),dbc.Container([ 
+dbc.Row([
+            login
+            ], justify="center", align="center"
+            )
+]),html.Div(style={"height": "23vh"})])
+
+
+
+##################### User Registration ###############################################################
+
+
+name_input_new = dbc.FormGroup(
+    [
+        dbc.Input(id="name", placeholder="Enter your name")
+    ]
+)
+
+email_input_new = dbc.FormGroup(
+    [
+        dbc.Input(id="new_user", placeholder="Enter email")
+    ]
+)
+password_input_new = dbc.FormGroup(
+    [
+        dbc.Input(type="password",id="new_password",placeholder="Enter password")
+    ]
+)
+registrer=dbc.Button("Register", id='register-button', color="primary")
+
+resgister = html.Div([dbc.Card(
+    dbc.CardBody(
+        [
+            dbc.Row(html.Div(bran,style={'width': '78%'}),align='center',justify="center"),
+            html.Br(),
+            dbc.Form([
+            dbc.Row(html.Div(name_input_new,style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div(email_input_new,style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div(password_input_new,style={'width': '90%'}),align='center',justify="center"),
+            dbc.Row(html.Div(registrer,style={'width': '90%'}),align='center',justify="center")])
+        ]
+    )
+)],style={'width': '40%','textAlign': 'center'})
+
+resgisterbody = html.Div(id='registrer-body',children=html.Div([html.Div(style={"height": "23vh"}),dbc.Container([ 
+dbc.Row([
+            resgister
+            ], justify="center", align="center"
+            )
+]),html.Div(style={"height": "23vh"})]))
+
 ##################### App Configuration ###############################################################
 
 
@@ -419,7 +504,7 @@ app.config.suppress_callback_exceptions = True
 server= Flask(__name__)
 # app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.config.suppress_callback_exceptions = True
-
+app.title = 'WaterQ'
 
 img='https://correlation1-public.s3-us-west-2.amazonaws.com/training/asset_2_2x.png' 
 
@@ -464,7 +549,11 @@ head = html.Div([
     navbar,
     collapse 
 ],style={'textAlign': 'center'})
-content=html.Div([head,html.Br(),allCon],style={'width': '100%'})
+
+content=html.Div(id='page-content',children=loginbody)
+
+maincontent=html.Div(html.Div([head,html.Br(),allCon],style={'width': '100%'}),id="maincontent")
+
 app.layout=html.Div(content)
 
 app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
@@ -488,20 +577,6 @@ class User(UserMixin, db.Model):
 db.create_all()
 
 ##################### Callbacks ###############################################################
-@app.callback(Output('page-content', 'children'),
-              [Input('login-button', 'n_clicks')],
-              [State('user', 'value'),
-               State('password', 'value')])
-def sucess(n_clicks, input1, input2):
-    user = User.query.filter_by(email=input1).first()
-    if user:
-        if str(user.password)== str(input2):
-            login_user(user)
-            return html.Div([navbar,html.Br(),title,allCon],style={'width': '100%'})
-        else:
-            pass
-    else:
-        pass
 
 @app.callback(
     Output("collapse", "is_open"),
@@ -667,6 +742,88 @@ def display_tab_content(active_tab):
         return line1
     return "Something went wrong..."+str(active_tab)
 
+@app.callback(Output('page-content', 'children'),
+              [Input('login-button', 'n_clicks'),
+              Input('create-acount', 'n_clicks'),
+              Input('visitor', 'n_clicks')],
+              [State('user', 'value'),
+               State('password', 'value')])
+def success(n_clicks1,n_clicks2,n_clicks3, input1, input2):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        object_id = 'No clicks yet'
+    else:
+        object_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if object_id=='login-button':
+        if not n_clicks1==None:
+            if n_clicks1 >= 1:
+                user = User.query.filter_by(email=input1).first()
+                if str(user.password)== str(input2):
+                    login_user(user)
+                    return maincontent
+                else:
+                    return loginbody
+            else: 
+                return loginbody
+        else:
+            return loginbody
+    elif object_id=='create-acount':
+        if not n_clicks2==None:
+            if n_clicks2 >= 1:
+                return resgisterbody
+            else: 
+                return loginbody
+        else:
+            return loginbody
+    elif object_id=='visitor':
+        return maincontent
+    else:
+        return loginbody
+    raise dash.exceptions.PreventUpdate
+
+
+@app.callback(Output('registrer-body', 'children'),
+              [Input('register-button', 'n_clicks')],
+              [State('name', 'value'),
+               State('new_user', 'value'),
+               State('new_password', 'value')])
+def register(n_clicks, input1, input2, input3):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        object_id = 'No clicks yet'
+    else:
+        object_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if object_id=='register-button':
+        if not n_clicks==None:
+            if n_clicks >= 1:
+                new_user = User(input1,input2,input3)
+                db.session.add(new_user)
+                db.session.commit()
+                return loginbody
+            else: 
+                return loginbody
+        else:
+            return loginbody
+    raise dash.exceptions.PreventUpdate
+
+@app.callback(Output('maincontent', 'children'),
+              [Input('logout', 'n_clicks')],)
+def logout(n_clicks):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        object_id = 'No clicks yet'
+    else:
+        object_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if object_id=='logout':
+        if not n_clicks==None:
+            if n_clicks >= 1:
+                logout_user()
+                return loginbody
+            else: 
+                return loginbody
+        else:
+            return loginbody
+    raise dash.exceptions.PreventUpdate
 
 if __name__== '__main__':
     app.run_server(debug=False)
