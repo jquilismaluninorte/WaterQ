@@ -758,7 +758,8 @@ def success(n_clicks1,n_clicks2,n_clicks3, input1, input2):
         if not n_clicks1==None:
             if n_clicks1 >= 1:
                 user = User.query.filter_by(email=input1).first()
-                if str(user.password)== str(input2):
+                print(user)
+                if str(user.password) == str(input2):
                     login_user(user)
                     return maincontent
                 else:
@@ -779,7 +780,6 @@ def success(n_clicks1,n_clicks2,n_clicks3, input1, input2):
         return maincontent
     else:
         return loginbody
-    raise dash.exceptions.PreventUpdate
 
 
 @app.callback(Output('registrer-body', 'children'),
