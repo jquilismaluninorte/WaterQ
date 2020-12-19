@@ -1,4 +1,6 @@
-![image](./res/img/icon.jpg | width=85) ## WaterQ
+![alttext](/res/img/icon.jpg)   
+
+## WaterQ
 
 ## Colombia IRCA Data Analysis
 
