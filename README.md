@@ -1,4 +1,4 @@
-![image](res/img/icon.jpg | width=25)   
+![image](/res/img/icon.jpg | width=25)   
 
 ## WaterQ
 
