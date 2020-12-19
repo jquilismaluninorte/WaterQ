@@ -528,7 +528,7 @@ for key in teamgroup:
 navbar = dbc.Nav([dbc.Row([dbc.Col(html.Div(html.Img(src=img,height="70px"),className="collapse navbar-collapse"),width={"size": 1, "order": 1,},),
     dbc.Col(html.Button("TEAM 15",className="btn btn-info mx-5",id="collapse-button"), width={"size": 2, "order": 12},),
     dbc.Col(html.H1("Colombia IRCA Data Analysis", className="mx-lg-5"),width={"size": 7, "order": 12},),
-    dbc.Col(html.Button("Cerrar Sesión",className="btn btn-info mx-5",id="logout"),width={"size": 2, "order": 12,},)],no_gutters=True,style={'width': '100%'})
+    dbc.Col(html.Button("Logout",className="btn btn-info mx-5",id="logout"),width={"size": 2, "order": 12,},)],no_gutters=True,style={'width': '100%'})
     ],className="navbar navbar-expand-lg navbar-dark bg-dark")
 collapse = dbc.Collapse(
             dbc.Row(dbc.Col(dbc.Row(cards, no_gutters=True,),width={"size": 11, "offset": 2},)),
@@ -549,8 +549,8 @@ server= Flask(__name__)
 app = dash.Dash(server=server,external_stylesheets=[dbc.themes.CERULEAN])
 
 app.config.suppress_callback_exceptions = True
-app.secret_key = os.urandom(24)
-#app.server.secret_key = os.urandom(24)
+#app.secret_key = os.urandom(24)
+app.server.secret_key = os.urandom(24)
 
 
 # app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -558,7 +558,7 @@ app.config.suppress_callback_exceptions = True
 app.title = 'WaterQ'
 app.layout=html.Div(content)
 
-app.layout=html.Div(content,style={'backgroundColor': '#F3F3F3'})
+app.layout=html.Div(content)
 app.server.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:team15@localhost/waterq'
 app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app.server)
@@ -818,7 +818,7 @@ def logout(n_clicks):
     if object_id=='logout':
         if not n_clicks==None:
             if n_clicks >= 1:
-                logout_user()
+                # logout_user()
                 return loginbody
             else: 
                 return loginbody
