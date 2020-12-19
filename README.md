@@ -1,4 +1,4 @@
-![](res/img/icon.jpg =85x) # WaterQ
+![image](./res/img/icon.jpg | width=85) ## WaterQ
 
 ## Colombia IRCA Data Analysis
 
