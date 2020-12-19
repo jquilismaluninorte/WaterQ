@@ -432,7 +432,7 @@ teamgroup = {'team1':['David Vanegas','Ingeniería Mecatrónica','Bogotá','http
 }
 
 def cardteam(team):
-    card = dbc.Card(
+    card = dbc.Col(dbc.Card(
         [
             dbc.CardImg(src=team[3], top=True),
             dbc.CardBody(
@@ -445,21 +445,19 @@ def cardteam(team):
                 ]
             ),
         ],
-        style={"width": "11.5rem"},className="card border-primary mb-3"
-    )
+        style={"width": "12rem"},className="card border-primary mb-3"
+    ),width="auto")
     return card
 cards =[]
 for key in teamgroup:
     cards.append(cardteam(teamgroup[key]))
-navbar = dbc.Nav([
-    html.Div(html.Img(src=img,height="30px"),className="collapse navbar-collapse"),
-    html.Div([
-        html.H1("Colombia IRCA Data Analysis", className="mx-lg-5"),
-        html.Button("TEAM 15",className="btn btn-info mx-5",id="collapse-button")
-    ],className="collapse navbar-collapse")
+navbar = dbc.Nav([dbc.Row([dbc.Col(html.Div(html.Img(src=img,height="70px"),className="collapse navbar-collapse"),width={"size": 1, "order": 1,},),
+    dbc.Col(html.Button("TEAM 15",className="btn btn-info mx-5",id="collapse-button"), width={"size": 2, "order": 12},),
+    dbc.Col(html.H1("Colombia IRCA Data Analysis", className="mx-lg-5"),width={"size": 7, "order": 12},),
+    dbc.Col(html.Button("Cerrar Sesión",className="btn btn-info mx-5",id="logout"),width={"size": 2, "order": 12,},)],no_gutters=True,style={'width': '100%'})
     ],className="navbar navbar-expand-lg navbar-dark bg-dark")
 collapse = dbc.Collapse(
-            dbc.Row(cards),
+            dbc.Row(dbc.Col(dbc.Row(cards, no_gutters=True,),width={"size": 11, "offset": 2},)),
             id="collapse",
         )
 head = html.Div([
@@ -490,6 +488,21 @@ class User(UserMixin, db.Model):
 db.create_all()
 
 ##################### Callbacks ###############################################################
+@app.callback(Output('page-content', 'children'),
+              [Input('login-button', 'n_clicks')],
+              [State('user', 'value'),
+               State('password', 'value')])
+def sucess(n_clicks, input1, input2):
+    user = User.query.filter_by(email=input1).first()
+    if user:
+        if str(user.password)== str(input2):
+            login_user(user)
+            return html.Div([navbar,html.Br(),title,allCon],style={'width': '100%'})
+        else:
+            pass
+    else:
+        pass
+
 @app.callback(
     Output("collapse", "is_open"),
     [Input("collapse-button", "n_clicks")],
