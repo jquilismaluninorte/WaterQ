@@ -18,5 +18,4 @@ plotly == 4.14.1
 psycopg2-binary
 scipy == 1.5.4
 statsmodels == 0.12.1
-xlrd
-lxml
+xlrd==1.2.0
